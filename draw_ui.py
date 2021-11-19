@@ -259,12 +259,14 @@ def _initialized( ):
         max=100.0,
     )
 
+    global _draw_line_for_tiltshift_handler
     _draw_line_for_tiltshift_handler = bpy.types.SpaceView3D.draw_handler_add( _draw_line_for_tiltshift, (), 'WINDOW', 'POST_VIEW' )
 
 def _deinitialized( ):
     """
         後始末
     """
+    global _draw_line_for_tiltshift_handler
     if _draw_line_for_tiltshift_handler is not None:
         bpy.types.SpaceView3D.draw_handler_remove( _draw_line_for_tiltshift_handler, 'WINDOW' )
 
@@ -272,4 +274,5 @@ def _deinitialized( ):
 
     del scene.temp_overscan_area_percentage
     del scene.temp_overscan_area_displaying_color
+    del scene.overscan_area_transparent_percentage
     del bpy.types.Scene.temp_overscan_area_displaying

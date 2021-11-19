@@ -1,5 +1,7 @@
 # Tools:Q Animation Offset Shift
 
+[日本語](README.md)
+
 ## Outline
 
 View 3D
