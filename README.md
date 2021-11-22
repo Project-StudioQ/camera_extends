@@ -41,7 +41,7 @@ View 3D
 
 ## 動画
 
-準備中
+[![YouTubeで見る](https://img.youtube.com/vi/ePp1bB1Fl_s/0.jpg)](https://www.youtube.com/watch?v=ePp1bB1Fl_s)
 
 ## インストール
 
