@@ -41,7 +41,7 @@ This addon is camera helper for calculation overscan and tilt shift.
 
 ## Video
 
-[![Watch on the YouTube](https://img.youtube.com/vi/ePp1bB1Fl_s/0.jpg)](https://www.youtube.com/watch?v=ePp1bB1Fl_s)
+[![Watch on the YouTube](https://img.youtube.com/vi/WvK_I1b3AXA/0.jpg)](https://www.youtube.com/watch?v=WvK_I1b3AXA)
 
 ## How to install
 
