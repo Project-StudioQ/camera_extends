@@ -162,6 +162,7 @@ def _draw_line_on_camera( camera_object, camera ):
         rotate_matrix @= mathutils.Matrix.Rotation( -tilt_shift_horizontal_radian, 4, mathutils.Vector((0,1,0)) )
 
     # カメラ自体の行列
+    camera_scale = max( camera_object.scale.x, camera_object.scale.y, camera_object.scale.z )
     if camera_object.rotation_mode == "QUATERNION":
         camera_rotate_matrix = camera_object.rotation_quaternion.to_matrix( ).normalized( )
         camera_delta_rotate_matrix = camera_object.delta_rotation_quaternion.to_matrix( ).normalized( )
@@ -172,7 +173,7 @@ def _draw_line_on_camera( camera_object, camera ):
         camera_rotate_matrix = camera_object.rotation_euler.to_matrix( ).normalized( )
         camera_delta_rotate_matrix = camera_object.delta_rotation_euler.to_matrix( ).normalized( )
 
-    matrix = camera_object.matrix_world.to_3x3( ) @ camera_object.matrix_local.to_3x3( ).inverted( ) @ camera_rotate_matrix
+    matrix = ( camera_object.matrix_world.to_3x3( ) @ camera_object.matrix_local.to_3x3( ).inverted( ) @ camera_rotate_matrix ) * camera_scale
     matrix.resize_4x4( )
     matrix.translation = camera_object.matrix_world.translation
     # XXX: ティルトシフトの影響がでて多重回転してしまうので以下ではやっていない
@@ -187,13 +188,14 @@ def _draw_line_on_camera( camera_object, camera ):
     # スクリーンまでの距離を計算
     half_sensor = 0.5 * ( camera.sensor_height if camera.sensor_fit == 'VERTICAL' else camera.sensor_width )
     lens = camera.temp_lens if hasattr( camera, "temp_lens" ) and 0.0 < camera.temp_lens else camera.lens
-    drawsize = 0.5 / ( ( camera_object.scale.x + camera_object.scale.y + camera_object.scale.z ) / 3.0 )
+    drawsize = 0.5 / camera_scale
     if camera.type == 'ORTHO':
         # 平行
         depth = -camera.display_size
     else:
         # 透視
-        depth = ( drawsize * lens / (-half_sensor) * camera_object.scale.z ) * camera.display_size
+        depth = ( drawsize * lens / (-half_sensor) ) * camera.display_size
+    depth *= camera_scale
 
     # ティルトシフト回転 -> カメラ自体の行列計算
     for i in range( len( quad ) ):
