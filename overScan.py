@@ -64,8 +64,8 @@ class QANIM_OT_overscan_run(bpy.types.Operator):
         curResY = bpy.context.scene.render.resolution_y
         
         if camera.pixOrPer_prop_enum == 'percent':
-            bpy.context.scene.render.resolution_x = curResX * scaleRatioX
-            bpy.context.scene.render.resolution_y = curResY * scaleRatioY
+            bpy.context.scene.render.resolution_x = int( curResX * scaleRatioX )
+            bpy.context.scene.render.resolution_y = int( curResY * scaleRatioY )
         elif camera.pixOrPer_prop_enum == 'pixcel':
             bpy.context.scene.render.resolution_x = camera.magnification_prop_IntX
             bpy.context.scene.render.resolution_y = camera.magnification_prop_IntY
@@ -85,14 +85,14 @@ class QANIM_OT_overscan_run(bpy.types.Operator):
         bpy.types.Camera.sensorWidth = bpy.props.IntProperty(name="sensor_width")
         camera.oriResX = curResX
         camera.oriResY = curResY
-        camera.sensorWidth = camera.sensor_width
+        camera.sensorWidth = int( camera.sensor_width )
 
         # センサーサイズ変更によるオーバースキャン
         sensorWidth = camera.sensor_width
         if camera.pixOrPer_prop_enum == 'percent':
-            camera.sensor_width = sensorWidth * scaleRatioX
+            camera.sensor_width = int( sensorWidth * scaleRatioX )
         elif camera.pixOrPer_prop_enum == 'pixcel':
-            camera.sensor_width = sensorWidth * (camera.magnification_prop_IntX / camera.oriResX)
+            camera.sensor_width = int( sensorWidth * (camera.magnification_prop_IntX / camera.oriResX) )
         
         # オーバースキャン基点設定
         if pivot[0] == 'U':
@@ -213,7 +213,6 @@ def _deinitialized( ):
     scene = bpy.types.Camera
     
     del scene.pixOrPer_prop_enum
-    del scene.pivot_prop_enum
     del scene.temp_ratio_interlocked
     del scene.temp_updating_locked
     del scene.temp_camera_overscan_force_apply
@@ -221,8 +220,10 @@ def _deinitialized( ):
     del scene.magnification_prop_FloatY
     del scene.magnification_prop_IntX
     del scene.magnification_prop_IntY
+
     del scene.overscan_original_shift_x
     del scene.overscan_original_shift_y
+    del scene.pivot_prop_enum
 
 def _update_magnification_prop_FloatX( self, context ):
     scene = context.active_object.data

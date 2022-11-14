@@ -152,8 +152,15 @@ def _draw_line_on_camera( camera_object, camera ):
     if hasattr(camera, "temp_lens") and 0.0 < camera.temp_lens:
         shift.x = camera.temp_shift_x
         shift.y = camera.temp_shift_y
-    rotate_matrix = mathutils.Matrix.Rotation( tilt_shift_vertical_radian, 4, mathutils.Vector((1,0,0)) ) * camera.display_size
-    rotate_matrix @= mathutils.Matrix.Rotation( -tilt_shift_horizontal_radian, 4, mathutils.Vector((0,1,0)) )
+    if camera.type == 'ORTHO':
+        # 平行
+        rotate_matrix = mathutils.Matrix.Rotation( tilt_shift_vertical_radian, 4, mathutils.Vector((1,0,0)) )
+        rotate_matrix @= mathutils.Matrix.Rotation( -tilt_shift_horizontal_radian, 4, mathutils.Vector((0,1,0)) )
+    else:
+        # 透視
+        rotate_matrix = mathutils.Matrix.Rotation( tilt_shift_vertical_radian, 4, mathutils.Vector((1,0,0)) ) * camera.display_size
+        rotate_matrix @= mathutils.Matrix.Rotation( -tilt_shift_horizontal_radian, 4, mathutils.Vector((0,1,0)) )
+
     # カメラ自体の行列
     if camera_object.rotation_mode == "QUATERNION":
         camera_rotate_matrix = camera_object.rotation_quaternion.to_matrix( ).normalized( )
@@ -165,10 +172,11 @@ def _draw_line_on_camera( camera_object, camera ):
         camera_rotate_matrix = camera_object.rotation_euler.to_matrix( ).normalized( )
         camera_delta_rotate_matrix = camera_object.delta_rotation_euler.to_matrix( ).normalized( )
 
-    camera_matrix_world = camera_object.matrix_world.to_3x3( )
-    matrix = camera_matrix_world @ camera_object.matrix_local.to_3x3( ).inverted( ) @ camera_rotate_matrix
+    matrix = camera_object.matrix_world.to_3x3( ) @ camera_object.matrix_local.to_3x3( ).inverted( ) @ camera_rotate_matrix
     matrix.resize_4x4( )
     matrix.translation = camera_object.matrix_world.translation
+    # XXX: ティルトシフトの影響がでて多重回転してしまうので以下ではやっていない
+    #matrix = camera_object.matrix_world
 
     # ガイド4点の計算と中心点の計算
     quad = [ t for t in camera.view_frame( scene=context.scene ) ]
@@ -178,9 +186,14 @@ def _draw_line_on_camera( camera_object, camera ):
 
     # スクリーンまでの距離を計算
     half_sensor = 0.5 * ( camera.sensor_height if camera.sensor_fit == 'VERTICAL' else camera.sensor_width )
-    drawsize = 0.5 / ( ( camera_object.scale.x + camera_object.scale.y + camera_object.scale.z ) / 3.0 )
     lens = camera.temp_lens if hasattr( camera, "temp_lens" ) and 0.0 < camera.temp_lens else camera.lens
-    depth = ( drawsize * lens / (-half_sensor) * camera_object.scale.z ) * camera.display_size
+    drawsize = 0.5 / ( ( camera_object.scale.x + camera_object.scale.y + camera_object.scale.z ) / 3.0 )
+    if camera.type == 'ORTHO':
+        # 平行
+        depth = -camera.display_size
+    else:
+        # 透視
+        depth = ( drawsize * lens / (-half_sensor) * camera_object.scale.z ) * camera.display_size
 
     # ティルトシフト回転 -> カメラ自体の行列計算
     for i in range( len( quad ) ):
@@ -219,7 +232,19 @@ def _draw_line_on_camera( camera_object, camera ):
     c = camera.temp_overscan_area_displaying_color
     shader.uniform_float( "color", ( c.r, c.g, c.b, camera.overscan_area_transparent_percentage / 100.0 ) )
     batch = batch_for_shader( shader, 'TRIS', { "pos": coords } )
-    batch.draw( shader )
+    with gpu.matrix.push_pop_projection( ):
+        # カメラのnearよりも前なので映らないので
+        # 透視変換行列のクリッピングをいじる
+        if -depth < camera.clip_start:
+            if camera.type != 'ORTHO':
+                proj_matr = gpu.matrix.get_projection_matrix( )
+                temp_far = camera.clip_end
+                temp_near = -depth / 2.0
+                proj_matr[2][2] = - (temp_far + temp_near) / (temp_far - temp_near)
+                proj_matr[2][3] = - (2 * temp_far * temp_near) / (temp_far - temp_near)
+                gpu.matrix.load_projection_matrix( proj_matr )
+
+        batch.draw( shader )
 
 # -----------------------------------------------------------------------------
 _draw_line_for_tiltshift_handler = None
@@ -233,7 +258,7 @@ def _initialized( ):
 
     scene = bpy.types.Camera
 
-    # オーバースキャンエリア割合
+    # オーバースキャンエリアパーセンテージ
     scene.temp_overscan_area_percentage = bpy.props.FloatProperty(
         name='Overscan Area Percentage',
         description='Overscan Area Percentage',
@@ -249,7 +274,7 @@ def _initialized( ):
         subtype='COLOR',
         default=(0.0,1.0,0.0),
     )
-    # オーバースキャンエリア表示α
+    # オーバースキャンエリア表示アルファ
     scene.overscan_area_transparent_percentage = bpy.props.FloatProperty(
         name='Overscan Area Transparent Percentage',
         description='Overscan Area Transparent Percentage',
