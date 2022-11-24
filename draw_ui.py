@@ -161,23 +161,7 @@ def _draw_line_on_camera( camera_object, camera ):
         rotate_matrix = mathutils.Matrix.Rotation( tilt_shift_vertical_radian, 4, mathutils.Vector((1,0,0)) ) * camera.display_size
         rotate_matrix @= mathutils.Matrix.Rotation( -tilt_shift_horizontal_radian, 4, mathutils.Vector((0,1,0)) )
 
-    # カメラ自体の行列
     camera_scale = max( camera_object.scale.x, camera_object.scale.y, camera_object.scale.z )
-    if camera_object.rotation_mode == "QUATERNION":
-        camera_rotate_matrix = camera_object.rotation_quaternion.to_matrix( ).normalized( )
-        camera_delta_rotate_matrix = camera_object.delta_rotation_quaternion.to_matrix( ).normalized( )
-    elif camera_object.rotation_mode == "AXIS_ANGLE":
-        camera_rotate_matrix = camera_object.rotation_axis_angle.to_matrix( ).normalized( )
-        camera_delta_rotate_matrix = mathutils.Matrix()
-    else:
-        camera_rotate_matrix = camera_object.rotation_euler.to_matrix( ).normalized( )
-        camera_delta_rotate_matrix = camera_object.delta_rotation_euler.to_matrix( ).normalized( )
-
-    matrix = ( camera_object.matrix_world.to_3x3( ) @ camera_object.matrix_local.to_3x3( ).inverted( ) @ camera_rotate_matrix ) * camera_scale
-    matrix.resize_4x4( )
-    matrix.translation = camera_object.matrix_world.translation
-    # XXX: ティルトシフトの影響がでて多重回転してしまうので以下ではやっていない
-    #matrix = camera_object.matrix_world
 
     # ガイド4点の計算と中心点の計算
     quad = [ t for t in camera.view_frame( scene=context.scene ) ]
@@ -199,7 +183,7 @@ def _draw_line_on_camera( camera_object, camera ):
 
     # ティルトシフト回転 -> カメラ自体の行列計算
     for i in range( len( quad ) ):
-        quad[i] = matrix @ ( ( rotate_matrix @ ( quad[i] + shift - center ) ) + mathutils.Vector((0,0,depth)) )
+        quad[i] = camera_object.matrix_world @ quad[i]
     coords = [
         quad[0], quad[1],
         quad[1], quad[2],
@@ -208,37 +192,11 @@ def _draw_line_on_camera( camera_object, camera ):
     ]
     quad_center = ( quad[0] + quad[1] + quad[2] + quad[3] ) / 4.0
 
-    # ティルトシフトガイド描画
-    shader.bind( )
-    shader.uniform_float( "color", TILT_SHIFT_CAMERA_LINE_COLOR )
-    batch = batch_for_shader( shader, 'LINES', { "pos": coords } )
-    batch.draw( shader )
-
-    # オーバースキャンエリア
-    s = camera.temp_overscan_area_percentage / 100.0
-    inner_quad = [ quad_center + ( q - quad_center ) / s for q in quad ]
-    coords = [
-        # 上
-        quad[0], quad[3], inner_quad[0],
-        quad[3], inner_quad[0], inner_quad[3],
-        # 下
-        quad[1], quad[2], inner_quad[1],
-        quad[2], inner_quad[1], inner_quad[2],
-        # 右
-        quad[0], quad[1], inner_quad[0],
-        quad[1], inner_quad[0], inner_quad[1],
-        # 左
-        quad[2], quad[3], inner_quad[3],
-        quad[2], inner_quad[2], inner_quad[3],
-    ]
-    c = camera.temp_overscan_area_displaying_color
-    shader.uniform_float( "color", ( c.r, c.g, c.b, camera.overscan_area_transparent_percentage / 100.0 ) )
-    batch = batch_for_shader( shader, 'TRIS', { "pos": coords } )
     with gpu.matrix.push_pop_projection( ):
-        # カメラのnearよりも前なので映らないので
-        # 透視変換行列のクリッピングをいじる
+        # カメラのnearよりも前で映らない？
         if -depth < camera.clip_start:
             if camera.type != 'ORTHO':
+                # 透視変換行列のクリッピングをいじる
                 proj_matr = gpu.matrix.get_projection_matrix( )
                 temp_far = camera.clip_end
                 temp_near = -depth / 2.0
@@ -246,6 +204,32 @@ def _draw_line_on_camera( camera_object, camera ):
                 proj_matr[2][3] = - (2 * temp_far * temp_near) / (temp_far - temp_near)
                 gpu.matrix.load_projection_matrix( proj_matr )
 
+        # ティルトシフトガイド描画
+        shader.bind( )
+        shader.uniform_float( "color", TILT_SHIFT_CAMERA_LINE_COLOR )
+        batch = batch_for_shader( shader, 'LINES', { "pos": coords } )
+        batch.draw( shader )
+
+        # オーバースキャンエリア
+        s = camera.temp_overscan_area_percentage / 100.0
+        inner_quad = [ quad_center + ( q - quad_center ) / s for q in quad ]
+        coords = [
+            # 上
+            quad[0], quad[3], inner_quad[0],
+            quad[3], inner_quad[0], inner_quad[3],
+            # 下
+            quad[1], quad[2], inner_quad[1],
+            quad[2], inner_quad[1], inner_quad[2],
+            # 右
+            quad[0], quad[1], inner_quad[0],
+            quad[1], inner_quad[0], inner_quad[1],
+            # 左
+            quad[2], quad[3], inner_quad[3],
+            quad[2], inner_quad[2], inner_quad[3],
+        ]
+        c = camera.temp_overscan_area_displaying_color
+        shader.uniform_float( "color", ( c.r, c.g, c.b, camera.overscan_area_transparent_percentage / 100.0 ) )
+        batch = batch_for_shader( shader, 'TRIS', { "pos": coords } )
         batch.draw( shader )
 
 # -----------------------------------------------------------------------------
