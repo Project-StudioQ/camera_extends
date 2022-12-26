@@ -82,17 +82,17 @@ class QANIM_OT_overscan_run(bpy.types.Operator):
         # 元のカメラ設定・解像度をカスタムプロパティに格納
         bpy.types.Camera.oriResX = bpy.props.IntProperty(name="oriResX")
         bpy.types.Camera.oriResY = bpy.props.IntProperty(name="oriResY")
-        bpy.types.Camera.sensorWidth = bpy.props.IntProperty(name="sensor_width")
+        bpy.types.Camera.sensorWidth = bpy.props.FloatProperty(name="sensor_width")
         camera.oriResX = curResX
         camera.oriResY = curResY
-        camera.sensorWidth = int( camera.sensor_width )
+        camera.sensorWidth = camera.sensor_width
 
         # センサーサイズ変更によるオーバースキャン
-        sensorWidth = camera.sensor_width
+        sensor_width = camera.sensor_width
         if camera.pixOrPer_prop_enum == 'percent':
-            camera.sensor_width = int( sensorWidth * scaleRatioX )
+            camera.sensor_width = sensor_width * scaleRatioX
         elif camera.pixOrPer_prop_enum == 'pixcel':
-            camera.sensor_width = int( sensorWidth * (camera.magnification_prop_IntX / camera.oriResX) )
+            camera.sensor_width = sensor_width * (camera.magnification_prop_IntX / camera.oriResX)
         
         # オーバースキャン基点設定
         if pivot[0] == 'U':
