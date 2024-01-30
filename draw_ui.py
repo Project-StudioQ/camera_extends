@@ -101,7 +101,12 @@ class QANIM_PT_overscan(bpy.types.Panel):
 
         layout.prop( camera, 'temp_overscan_area_displaying_color', text='Area Color' )
         layout.prop( camera, 'overscan_area_transparent_percentage', text='Transparency' )
-        layout.prop( camera, 'temp_overscan_area_percentage', text='Area Percentage' )
+        layout.label( text= "Area Overscan Percentage:" )
+        row = layout.row( )
+        col = row.column( )
+        col.prop( camera, 'temp_overscan_area_percentage_x', text='Area Percentage:X' )
+        col = row.column( )
+        col.prop( camera, 'temp_overscan_area_percentage_y', text='Area Percentage:Y' )
 
 # -----------------------------------------------------------------------------
 
@@ -211,8 +216,14 @@ def _draw_line_on_camera( camera_object, camera ):
         batch.draw( shader )
 
         # オーバースキャンエリア
-        s = camera.temp_overscan_area_percentage / 100.0
-        inner_quad = [ quad_center + ( q - quad_center ) / s for q in quad ]
+        sx = camera.temp_overscan_area_percentage_x / 100.0
+        sy = camera.temp_overscan_area_percentage_y / 100.0
+        inner_quad = [
+            quad_center - ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) - ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+            quad_center - ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) + ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+            quad_center + ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) + ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+            quad_center + ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) - ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+        ]
         coords = [
             # 上
             quad[0], quad[3], inner_quad[0],
@@ -245,9 +256,17 @@ def _initialized( ):
     scene = bpy.types.Camera
 
     # オーバースキャンエリアパーセンテージ
-    scene.temp_overscan_area_percentage = bpy.props.FloatProperty(
-        name='Overscan Area Percentage',
-        description='Overscan Area Percentage',
+    scene.temp_overscan_area_percentage_x = bpy.props.FloatProperty(
+        name='X',
+        description='Overscan Area Percentage X',
+        subtype='PERCENTAGE',
+        default=110.0,
+        min=100.0,
+        max=200.0,
+    )
+    scene.temp_overscan_area_percentage_y = bpy.props.FloatProperty(
+        name='Y',
+        description='Overscan Area Percentage Y',
         subtype='PERCENTAGE',
         default=110.0,
         min=100.0,
@@ -283,7 +302,8 @@ def _deinitialized( ):
 
     scene = bpy.types.Camera
 
-    del scene.temp_overscan_area_percentage
+    del scene.temp_overscan_area_percentage_x
+    del scene.temp_overscan_area_percentage_y
     del scene.temp_overscan_area_displaying_color
     del scene.overscan_area_transparent_percentage
     del bpy.types.Scene.temp_overscan_area_displaying
