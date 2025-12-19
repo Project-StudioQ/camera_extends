@@ -20,8 +20,14 @@ This addon is camera helper for calculation overscan and tilt shift.
   - Sets the screen size by pixel.
 - Apply
   - Apply above settings to the selected camera
+  - Overlap also available.
 - Reset
   - Reset applied settings
+
+- Total Scaling
+  - Showing total scale factors
+- Pivot
+  - Showing last applied pivot
 
 ### Tilt Shift
 
@@ -34,6 +40,8 @@ This addon is camera helper for calculation overscan and tilt shift.
 
 ### Overscan Test Displaying
 
+- Showing
+  - Toggle visible
 - Area Color
   - Sets a test area color.
 - Transparency

@@ -54,8 +54,8 @@ def _draw_line_on_camera( camera_object, camera ):
     if props.overscan_area.overscan_display_mode == 'DISABLE':
         return
 
-    tilt_shift_vertical_radian = math.radians( props.tilt_shift.vertical )
-    tilt_shift_horizontal_radian = math.radians( props.tilt_shift.horizontal )
+    tilt_shift_vertical_radian = props.tilt_shift.vertical
+    tilt_shift_horizontal_radian = props.tilt_shift.horizontal
 
     # ガイドの位置を計算
     shift = mathutils.Vector((camera.shift_x, camera.shift_y, 0.0))

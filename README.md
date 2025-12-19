@@ -24,6 +24,11 @@ View 3D
 - Reset
   - Applyで適応したものを初期値にリセット
 
+- Total Scaling
+  - 今まで掛けた総倍率を表示する
+- Pivot
+  - 最後に設定した基点
+
 ### Tilt Shift
 
 - Vertical
@@ -35,6 +40,8 @@ View 3D
 
 ### Overscan Test Displaying
 
+- Showing
+  - 表示設定オン/オフ
 - Area Color
   - 枠の色を指定する
 - Transparency

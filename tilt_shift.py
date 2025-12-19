@@ -11,7 +11,7 @@ DEBUG_MODE = False
 class QANIM_OT_camera_extends_tilt_shift_vertical_auto_detection(bpy.types.Operator):
     bl_label = "Tilt Shift Vertical Auto Detection"
     bl_idname = "qanim.camera_extends_tilt_shift_v_auto_detection"
-    bl_description = ""
+    bl_description = "Tilt Shift Vertical Auto Detection"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -23,14 +23,14 @@ class QANIM_OT_camera_extends_tilt_shift_vertical_auto_detection(bpy.types.Opera
         camera_object.delta_rotation_quaternion = mathutils.Quaternion()
         bpy.context.view_layer.update( )
         matrix = camera_object.matrix_world.to_3x3( )
-        props.vertical = math.degrees( math.asin( matrix[2].yz.normalized( ).cross( mathutils.Vector(( -1.0, 0.0 )) ) ) )
+        props.vertical = math.asin( matrix[2].yz.normalized( ).cross( mathutils.Vector(( -1.0, 0.0 )) ) )
 
         return {'FINISHED'}
 
 class QANIM_OT_camera_extends_tilt_shift_horizontal_auto_detection(bpy.types.Operator):
     bl_label = "Tilt Shift Horizontal Auto Detection"
     bl_idname = "qanim.camera_extends_tilt_shift_h_auto_detection"
-    bl_description = ""
+    bl_description = "Tilt Shift Horizontal Auto Detection"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -42,7 +42,7 @@ class QANIM_OT_camera_extends_tilt_shift_horizontal_auto_detection(bpy.types.Ope
         camera_object.delta_rotation_quaternion = mathutils.Quaternion()
         bpy.context.view_layer.update( )
         matrix = camera_object.matrix_world.to_3x3( )
-        props.horizontal = math.degrees( math.asin( matrix[0].xz.normalized( ).cross( mathutils.Vector(( 1.0, 0.0 )) ) ) )
+        props.horizontal = math.asin( matrix[0].xz.normalized( ).cross( mathutils.Vector(( 1.0, 0.0 )) ) )
 
         return {'FINISHED'}
 
@@ -62,8 +62,8 @@ def update( self, context ):
         camera.shift_x = props.temp_shift_x
         camera.shift_y = props.temp_shift_y
 
-    tilt_shift_vertical_radian = math.radians( props.vertical )
-    tilt_shift_horizontal_radian = math.radians( props.horizontal )
+    tilt_shift_vertical_radian = props.vertical
+    tilt_shift_horizontal_radian = props.horizontal
 
     # カメラ回転をQuaternionに変更する
     camera_object.rotation_mode = 'QUATERNION'
