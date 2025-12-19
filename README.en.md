@@ -14,12 +14,14 @@ This addon is camera helper for calculation overscan and tilt shift.
 
 - Pivot
   - Sets the pivot for calculating overscan.
-- ScreenRate X/Y
+- Percent X/Y
   - Sets the screen size by rate.
-- ScreenPixcel X/Y
+- Pixel X/Y
   - Sets the screen size by pixel.
-- Force Applies Overscan
-  - Enable force overscan.
+- Apply
+  - Apply above settings to the selected camera
+- Reset
+  - Reset applied settings
 
 ### Tilt Shift
 
@@ -27,7 +29,7 @@ This addon is camera helper for calculation overscan and tilt shift.
   - Correct pitch angle.
 - Horizontal
   - Correct yaw angle.
-- auto
+- Auto
   - Auto calculating above parameters.
 
 ### Overscan Test Displaying
@@ -41,11 +43,7 @@ This addon is camera helper for calculation overscan and tilt shift.
 
 ## Video
 
-[![Watch on the YouTube](https://img.youtube.com/vi/WvK_I1b3AXA/0.jpg)](https://www.youtube.com/watch?v=WvK_I1b3AXA)
-
-## How to install
-
-You can install from [Tools:Q repository](https://github.com/Project-StudioQ/tools_q).
+[![Watch on the YouTube](https://img.youtube.com/vi/nMszwP1Yblw/0.jpg)](https://www.youtube.com/watch?v=nMszwP1Yblw)
 
 ## License
 

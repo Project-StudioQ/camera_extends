@@ -62,6 +62,14 @@ class QANIM_Props_camera_extends_Camera_overscan(bpy.types.PropertyGroup):
     saved_shift_y: bpy.props.FloatProperty( )
 
 class QANIM_Props_camera_extends_Camera_overscan_area(bpy.types.PropertyGroup):
+    overscan_display_mode: bpy.props.EnumProperty(
+        name= 'Overscan Display Mode'
+    ,   default= 'PERCENTAGE'
+    ,   items= (
+            ('PERCENTAGE', 'Percentage', 'Percentage')
+        ,   ('PIXEL', 'Pixel', 'Pixel')
+        )
+    )
     percentage_x: bpy.props.FloatProperty(
         name='X',
         description='Overscan Area Percentage X',
@@ -78,6 +86,24 @@ class QANIM_Props_camera_extends_Camera_overscan_area(bpy.types.PropertyGroup):
         default=110.0,
         min=100.0,
         max=200.0,
+        options= {'HIDDEN'},
+    )
+    pixel_x: bpy.props.FloatProperty(
+        name='X',
+        description='Overscan Area Pixel X',
+        subtype='PIXEL',
+        default=110.0,
+        min=0.0,
+        max=4000.0,
+        options= {'HIDDEN'},
+    )
+    pixel_y: bpy.props.FloatProperty(
+        name='Y',
+        description='Overscan Area Pixel Y',
+        subtype='PIXEL',
+        default=110.0,
+        min=0.0,
+        max=4000.0,
         options= {'HIDDEN'},
     )
     displaying_color: bpy.props.FloatVectorProperty(
@@ -120,7 +146,7 @@ class QANIM_PT_camera_extends(bpy.types.Panel):
     bl_idname = "QANIM_PT_overscan"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Q_ANIM"
+    bl_category = "Camera Extends"
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
@@ -205,13 +231,25 @@ class QANIM_PT_camera_extends(bpy.types.Panel):
         row.prop( props, 'displaying_color', text= 'Area Color' )
         row = layout.row( )
         row.prop( props, 'transparent_percentage', text= 'Transparency' )
-        row = layout.row( align= True )
-        col = row.column( )
-        col.label( text= "Area Percentage:" )
-        col = row.column( )
-        col.prop( props, 'percentage_x', text= "" )
-        col = row.column( )
-        col.prop( props, 'percentage_y', text= "" )
+
+        row = layout.row( )
+        row.prop( props, 'overscan_display_mode', expand= True )
+        if props.overscan_display_mode == 'PERCENTAGE':
+            row = layout.row( align= True )
+            col = row.column( )
+            col.label( text= "Area Percentage:" )
+            col = row.column( )
+            col.prop( props, 'percentage_x', text= "" )
+            col = row.column( )
+            col.prop( props, 'percentage_y', text= "" )
+        elif props.overscan_display_mode == 'PIXEL':
+            row = layout.row( align= True )
+            col = row.column( )
+            col.label( text= "Area Pixel:" )
+            col = row.column( )
+            col.prop( props, 'pixel_x', text= "" )
+            col = row.column( )
+            col.prop( props, 'pixel_y', text= "" )
 
 # -----------------------------------------------------------------------------
 

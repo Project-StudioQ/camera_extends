@@ -48,18 +48,11 @@ def draw_line_for_tilt_shift( ):
     if not is_hide_in_global( cam_obj ):
         _draw_line_on_camera( cam_obj, cam_obj.data )
 
-    #for o in bpy.data.objects:
-    #    if o.type != "CAMERA":
-    #        continue
-
-    #    if is_hide_in_global( o ):
-    #        continue
-
-    #    _draw_line_on_camera( o, o.data )
-
 def _draw_line_on_camera( camera_object, camera ):
     context = bpy.context
     props = camera.q_camera_extends
+    if props.overscan_area.overscan_display_mode == 'DISABLE':
+        return
 
     tilt_shift_vertical_radian = math.radians( props.tilt_shift.vertical )
     tilt_shift_horizontal_radian = math.radians( props.tilt_shift.horizontal )
@@ -129,14 +122,27 @@ def _draw_line_on_camera( camera_object, camera ):
         batch.draw( shader )
 
         # オーバースキャンエリア
-        sx = props.overscan_area.percentage_x / 100.0
-        sy = props.overscan_area.percentage_y / 100.0
-        inner_quad = [
-            quad_center - ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) - ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
-            quad_center - ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) + ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
-            quad_center + ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) + ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
-            quad_center + ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) - ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
-        ]
+        if props.overscan_area.overscan_display_mode == 'PERCENTAGE':
+            sx = props.overscan_area.percentage_x / 100.0
+            sy = props.overscan_area.percentage_y / 100.0
+            inner_quad = [
+                quad_center - ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) - ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+                quad_center - ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) + ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+                quad_center + ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) + ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+                quad_center + ( ( ( quad[3] - quad[0] ) * 0.5 ) / sx ) - ( ( ( quad[1] - quad[0] ) * 0.5 ) / sy ),
+            ]
+
+        elif props.overscan_area.overscan_display_mode == 'PIXEL':
+            render = bpy.data.scenes["Scene"].render
+            sx = ( props.overscan_area.pixel_x / render.resolution_x )
+            sy = ( props.overscan_area.pixel_y / render.resolution_y )
+            inner_quad = [
+                quad[0] + ( quad[3] - quad[0] ) * sx + ( quad[1] - quad[0] ) * sy,
+                quad[1] + ( quad[3] - quad[0] ) * sx - ( quad[1] - quad[0] ) * sy,
+                quad[2] - ( quad[3] - quad[0] ) * sx - ( quad[1] - quad[0] ) * sy,
+                quad[3] - ( quad[3] - quad[0] ) * sx + ( quad[1] - quad[0] ) * sy,
+            ]
+
         coords = [
             # 上
             quad[0], quad[3], inner_quad[0],

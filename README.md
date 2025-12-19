@@ -14,12 +14,15 @@ View 3D
 
 - Pivot
   - オーバースキャン計算時の中心点を設定する
-- ScreenRate X/Y
+- Percent X/Y
   - 拡大率を設定する
-- ScreenPixcel X/Y
+- Pixel X/Y
   - ピクセル数で大きさを指定する
-- Force Applies Overscan
-  - オーバースキャンを多重に掛ける際にオンにする
+- Apply
+  - 上記設定を選択されたカメラに適応する
+  - 重ねがけも可
+- Reset
+  - Applyで適応したものを初期値にリセット
 
 ### Tilt Shift
 
@@ -27,7 +30,7 @@ View 3D
   - 上下のティルトシフト
 - Horizontal
   - 左右のティルトシフト
-- auto
+- Auto
   - 上記 Vertical/Holizontal を自動で計算する
 
 ### Overscan Test Displaying
@@ -41,11 +44,7 @@ View 3D
 
 ## 動画
 
-[![YouTubeで見る](https://img.youtube.com/vi/WvK_I1b3AXA/0.jpg)](https://www.youtube.com/watch?v=WvK_I1b3AXA)
-
-## インストール
-
-Project Studio Qが公開している [Tools:Q](https://github.com/Project-StudioQ/tools_q) よりインストールしてください。
+[![YouTubeで見る](https://img.youtube.com/vi/nMszwP1Yblw/0.jpg)](https://www.youtube.com/watch?v=nMszwP1Yblw)
 
 ## ライセンス
 
